@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Entity\Category;
 use App\Entity\PdtContent;
 use App\Entity\Product;
+use Illuminate\Http\Request;
 use Log;
 
 class BookController extends Controller
@@ -23,12 +24,32 @@ class BookController extends Controller
     return view('product')->with('products',$product);
   }
 
-  public function toPdtContent($product_id)
+  public function toPdtContent(Request $request,$product_id)
   {
+
+    $bk_cart = $request->cookie('bk_cart');
+    $bk_cart_arr = $bk_cart != null ? explode(',',$bk_cart) : array();
+    $count = 0;
+    //这里必须传应用，因为，这是一个灿亮，不是一个对象.
+    foreach ($bk_cart_arr as $value) {
+      $index = strpos($value,':');
+      if (substr($value,0,$index) == $product_id) {
+        $count = (int)substr($value,$index+1);
+        break;
+      }
+    }
+
+
+
+
     $product = Product::find($product_id);
     $pdt_content = PdtContent::where('product_id',$product_id)->first();
     return view('pdt_content')->with('product',$product)
-                              ->with('pdt_content',$pdt_content);
+                              ->with('pdt_content',$pdt_content)
+                              ->with('count',$count );
+
+
+
 
   }
 
